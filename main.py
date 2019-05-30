@@ -1,5 +1,4 @@
-import time
-
+#!/usr/bin/env python
 # For operations with csv files
 import csv
 
@@ -19,8 +18,9 @@ import numpy as np
 # System imports
 import os
 import shutil
+import time
 
-# Importing libraries for ADS1115 connction
+# Importing libraries for ADS1115 connection
 import board
 import busio
 import adafruit_ads1x15.ads1115 as ADS
@@ -247,12 +247,13 @@ class GUI(Frame):
     def init_ads1x15(self):
         # Create the I2C bus
         self.i2c = busio.I2C(board.SCL, board.SDA)
-
+        
         # Create the ADC object using the I2C bus
-        self.ads = ADS.ADS1115(self.i2c)
+        if self.i2c:
+            self.ads = ADS.ADS1115(self.i2c)
 
-        # Create single-ended input on channel 0
-        self.chan = AnalogIn(self.ads, ADS.P0)
+            # Create single-ended input on channel 0
+            self.chan = AnalogIn(self.ads, ADS.P0)
 
     # Main function, that makes GUI
     def init_window(self):

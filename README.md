@@ -1,5 +1,14 @@
 # voltage-measure
 Program developed for Raspberry Pi, for the purpose of measuring voltage, converted by ADS1115, and further processing data
+## Installation
+Necessary modules
+* `sudo pip3 install -r requirements.txt`
+* `sudo python3 -m pip install matplotlib`
+For installation of PIL use
+* `sudo apt-get install python3-pil python3-pil.imagetk`
+* `sudo pip3 install PIL-2.0+dummy-py2.py3-none-any.whl`
+## Usage
+`python3 main.py`
 ### GUI
 * Program has GUI, built using Tkinter
 * For images, program uses PIL library
