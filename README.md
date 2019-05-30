@@ -3,7 +3,7 @@ Program developed for Raspberry Pi, for the purpose of measuring voltage, conver
 ## Installation
 Necessary modules
 * `sudo pip3 install -r requirements.txt`
-* `sudo python3 -m pip install matplotlib`
+* `sudo python3 -m pip install matplotlib` <br />
 For installation of PIL use
 * `sudo apt-get install python3-pil python3-pil.imagetk`
 * `sudo pip3 install PIL-2.0+dummy-py2.py3-none-any.whl`
