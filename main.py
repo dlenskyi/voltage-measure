@@ -16,7 +16,9 @@ from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import numpy as np
 
+# System imports
 import os
+import shutil
 
 # Importing libraries for ADS1115 connction
 import board
@@ -30,6 +32,7 @@ class GUI(Frame):
     def __init__(self, master=None):
         self.master = master
         self.remember_val = tk.IntVar()
+        self.name_for_save_fig = '1'
         self.save_fig = tk.IntVar()
         self.init_ads1x15()
         self.init_window()
@@ -94,6 +97,51 @@ class GUI(Frame):
                 self.img_lbl = tk.Button(self.master, image=render,command=self.imgpress)
                 self.img_lbl.image = render
                 self.img_lbl.place(x=0, y=0)
+        except Exception as e:
+            # Case if error occured while opening file
+            print(str(e))
+            mb.showerror("Open File", "Failed to open a file!\n")
+            return
+
+    # Function that sends selected file to shared directory
+    def send_file(self):
+        try:
+            # Call the window which helps to find a file to open
+            filename = fd.askopenfilename(filetypes = (("CSV Files", ".csv"), ("PNG Files", ".png"), ("PDF Files", '.pdf'), ("All files", "*.*")))
+
+            source_file = filename
+            destination_folder = '/home/pi/share/'
+            # Case if selected file is .csv
+            if '.csv' in filename:
+
+                # If file exists remove it
+                path_to_csv = destination_folder + 'data.csv'
+                if os.path.exists(path_to_csv):
+                    os.remove(path_to_csv)
+
+                # Moves selected csv file to destination folder
+                shutil.move(source_file, destination_folder)
+
+            # Case if selected file is .png or .pdf
+            elif '.png' in filename or '.pdf' in filename:
+
+                # If file exists remove it
+                path_to_png = destination_folder + self.name_for_save_fig + '.png'
+                path_to_pdf = destination_folder + self.name_for_save_fig + '.pdf'
+                if os.path.exists(path_to_png) and '.png' in filename:
+                    os.remove(path_to_png)
+                elif os.path.exists(path_to_pdf) and '.pdf' in filename:
+                    os.remove(path_to_pdf)
+
+                # Moves selected file to destination folder
+                shutil.move(source_file, destination_folder)
+
+            # Removing previous data from text_box
+            self.text_box.delete(1.0, "end-1c")
+
+            # Printing about successfull operation
+            self.text_box.insert(tk.END, "File has been moved to {}!\n".format(destination_folder))
+
         except Exception as e:
             # Case if error occured while opening file
             print(str(e))
@@ -185,7 +233,7 @@ class GUI(Frame):
         plt.show(block=False)
 
         if int(self.save_fig.get()) == 1:
-            self.save('1')
+            self.save(self.name_for_save_fig)
 
     # Function that handles quit button
     def callback(self):
@@ -219,14 +267,14 @@ class GUI(Frame):
 
         # Create a box, which will behave like console window
         self.text_box = tk.Text(self.master, width=50, height=15)
-        self.text_box.grid(row=8, column=0, columnspan=10)
+        self.text_box.grid(row=7, column=0, columnspan=15, sticky='W', padx=65)
         self.text_box.insert("end-1c", "Enter values\n")
 
         # Add scrollbar to the Text widget
         self.scroll = tk.Scrollbar(self.master)
         self.scroll.config(command=self.text_box.yview)
         self.text_box.config(yscrollcommand=self.scroll.set)
-        self.scroll.grid(row=8, column=2, columnspan=10, sticky='NS')
+        self.scroll.grid(row=7, column=1, columnspan=15, sticky='NS')
 
         # Create check button
         tk.Checkbutton(self.master, text="Remember values", variable=self.remember_val).grid(row=1, column=2, sticky=tk.NS, padx=35)
@@ -251,15 +299,16 @@ class GUI(Frame):
         self.e4.grid(row=3, column=1)
 
         # Binding Enter button as if user could press Apply button
-        self.e1.bind("<Return>", self.process_data) 
-        self.e2.bind("<Return>", self.process_data) 
+        self.e1.bind("<Return>", self.process_data)
+        self.e2.bind("<Return>", self.process_data)
         self.e3.bind("<Return>", self.process_data)
         self.e4.bind("<Return>", self.process_data)
 
         # Create two buttons which will call funcs if user press them
         tk.Button(self.master, text='Quit', command=self.callback).grid(row=5, column=0, sticky=tk.W, pady=10, padx=60)
-        tk.Button(self.master, text='Apply', command=self.process_data).grid(row=5, column=1, sticky=tk.W, pady=2, padx=60)
-        tk.Button(self.master, text='Browse files', command=self.open_file).grid(row=5, column=2, sticky=tk.W, pady=2, padx=60)
+        tk.Button(self.master, text='Apply!', command=self.process_data).grid(row=5, column=1, sticky=tk.W, pady=2, padx=60)
+        tk.Button(self.master, text='Open file', command=self.open_file).grid(row=5, column=2, sticky=tk.W, pady=2, padx=60)
+        tk.Button(self.master, text='Send file!', command=self.send_file).grid(row=7, column=2, columnspan=10, sticky=tk.W, pady=0, padx=60)
 
 # Create a Tkinter object
 root = tk.Tk()
