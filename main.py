@@ -247,6 +247,8 @@ class GUI(Frame):
     def callback(self):
         # Prompts a window if user wants to quit
         if mb.askyesno('Verify', 'Really quit?'):
+            # Destroy Tkinter object
+            self.master.destroy()
             exit()
         else:
             mb.showinfo('No', 'Quit has been cancelled')
@@ -266,6 +268,9 @@ class GUI(Frame):
             # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
             mb.showerror("ADS1115 Connection", "Failed to connect ADS1115 with Raspberry Pi:\n" + str(e))
+
+            # Destroy Tkinter object
+            self.master.destroy()
             exit()
 
     # Main function, that makes GUI
@@ -328,6 +333,9 @@ class GUI(Frame):
             # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
             mb.showerror("Window creation", "Failed to create a GUI window:\n" + str(e))
+
+            # Destroy Tkinter object
+            self.master.destroy()
             exit()
 
 # Create a Tkinter object
