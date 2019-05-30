@@ -216,7 +216,7 @@ class GUI(Frame):
                     time.sleep(self.delay_ms)
 
             # Printing about successfull write to file
-            self.text_box.insert(tk.END, "Data was successfully written to file data.csv:\n" + str(e))
+            self.text_box.insert(tk.END, "Data was successfully written to file data.csv\n")
 
             # Building plot
             plt.plot(x, y)
