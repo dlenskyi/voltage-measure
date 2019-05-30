@@ -45,8 +45,9 @@ class GUI(Frame):
             plt.savefig('{}.{}'.format(name, fmt), fmt='png')
             os.chdir(pwd)
             self.text_box.insert(tk.END, "Figure saved!\n")
-        except:
+        except Exception as e:
             # Case if error occure while saving a figure
+            print(str(e))
             mb.showerror("Save Figure", "Failed to save figure!\n")
             return
 
@@ -93,8 +94,9 @@ class GUI(Frame):
                 self.img_lbl = tk.Button(self.master, image=render,command=self.imgpress)
                 self.img_lbl.image = render
                 self.img_lbl.place(x=0, y=0)
-        except:
+        except Exception as e:
             # Case if error occured while opening file
+            print(str(e))
             mb.showerror("Open File", "Failed to open a file!\n")
             return
 
@@ -112,7 +114,7 @@ class GUI(Frame):
         tmp2 = self.e2.get()
         tmp3 = self.e3.get()
         tmp4 = self.e4.get()
-        if tmp1.lstrip('-').isdigit() == False or tmp2.lstrip('-').isdigit() == False or tmp3.lstrip('-').isdigit() == False or tmp4.lstrip('-').isdigit() == False:
+        if tmp1.lstrip('-').isdigit() == False or tmp2.lstrip('-').isdigit() == False or tmp3.replace(".", "", 1).lstrip('-').isdigit() == False or tmp4.replace(".", "", 1).lstrip('-').isdigit() == False:
             mb.showwarning("Error", 'Fields must be digits and not empty!')
             return
 
@@ -120,8 +122,8 @@ class GUI(Frame):
         self.delay = int(self.e1.get())
         self.delay_ms = self.delay / 1000
         self.measure_nb = int(self.e2.get())
-        self.ymin = int(self.e3.get())
-        self.ymax = int(self.e4.get())
+        self.ymin = float(self.e3.get())
+        self.ymax = float(self.e4.get())
 
         # Check for invalid values
         if self.delay <= 0 or self.measure_nb <= 0:
@@ -134,8 +136,6 @@ class GUI(Frame):
         # Removing initial text from text box
         self.text_box.delete(1.0, "end-1c")
 
-        # Creating Figure object
-        fig = plt.figure()
 
         # Assigning values to x and y
         x = np.arange(self.measure_nb)
@@ -146,19 +146,10 @@ class GUI(Frame):
         plt.xlabel('Number of measurements, n')
         plt.ylabel('Voltage, V')
 
-
-
-
-
-        # TEST TEST
-
         # Check for invalid limits of y axis
-        if int(self.chan.voltage) < self.ymin:
-            mb.showwarning("Error", 'ymin cannot be greater than measured voltage!')
+        if float(self.chan.voltage) < self.ymin:
+            mb.showwarning("Error", 'ymin cannot be greater than measured voltage: {}'.format(round(self.chan.voltage, 3)))
             return
-
-
-
 
         # Printing title of table with voltage values
         with open('data.csv', mode='w') as csv_file:
