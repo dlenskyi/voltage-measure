@@ -269,7 +269,7 @@ class GUI(Frame):
                     return
                 if float(self.chan1.voltage) > self.ymax1:
                     mb.showwarning("Error", 'ymax1 must be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
-                        return
+                    return
 
             if int(self.two_chan.get()) == 1:
                 for i in range(0, int(self.measure_nb)):
