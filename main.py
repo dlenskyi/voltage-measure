@@ -35,6 +35,10 @@ class GUI(Frame):
         self.master = master
         self.name_for_save_fig = '1'
         self.remember_val = tk.IntVar()
+        self.ymin2 = 0
+        self.ymax2 = 0
+        self.ymin3 = 0
+        self.ymax3 = 0
         self.save_fig = tk.IntVar()
         self.two_chan = tk.IntVar()
         self.three_chan = tk.IntVar()
@@ -105,7 +109,7 @@ class GUI(Frame):
                 self.img_lbl.place(x=0, y=0)
 
             # If selected file nor csv neither pdf or png
-            else:
+            elif '.' in filename:
                 mb.showwarning("Open File", "Type of file is not satisfied by a program\n")
         except Exception as e:
             # Case if error occured while opening file
@@ -176,12 +180,38 @@ class GUI(Frame):
             # Create connection to ADS1115 via I2C
             self.init_ads1x15()
 
-            # Check for invalid values
+            # Get values from user input
             tmp1 = self.e1.get()
             tmp2 = self.e2.get()
             tmp3 = self.e3.get()
             tmp4 = self.e4.get()
+            tmp5 = 0
+            tmp6 = 0
+            tmp7 = 0
+            tmp8 = 0
+
+            if int(self.two_chan.get()) == 1:
+                tmp5 = self.e5.get()
+                tmp6 = self.e6.get()
+
+            if int(self.three_chan.get()) == 1:
+                tmp5 = self.e5.get()
+                tmp6 = self.e6.get()
+                tmp7 = self.e7.get()
+                tmp8 = self.e8.get()
+
+            # Check for invalid values
             if tmp1.lstrip('-').isdigit() == False or tmp2.lstrip('-').isdigit() == False or tmp3.replace(".", "", 1).lstrip('-').isdigit() == False or tmp4.replace(".", "", 1).lstrip('-').isdigit() == False:
+                mb.showwarning("Error", 'Fields must be digits and not empty')
+                return
+            if int(self.two_chan.get()) == 0 and int(self.three_chan.get()) == 0 and (tmp5 or tmp6 or tmp7 or tmp8):
+                mb.showwarning("Error", 'Fill \'Use 2/3 channels\' before entering y limits for this channels')
+                return
+            if int(self.two_chan.get()) == 1 and (tmp5.replace(".", "", 1).lstrip('-').isdigit() == False or tmp6.replace(".", "", 1).lstrip('-').isdigit() == False):
+                mb.showwarning("Error", 'Fields must be digits and not empty')
+                return
+            if int(self.three_chan.get()) == 1 and (tmp5.replace(".", "", 1).lstrip('-').isdigit() == False or tmp6.replace(".", "", 1).lstrip('-').isdigit() == False or
+            tmp7.replace(".", "", 1).lstrip('-').isdigit() == False or tmp8.replace(".", "", 1).lstrip('-').isdigit() == False):
                 mb.showwarning("Error", 'Fields must be digits and not empty')
                 return
 
@@ -189,14 +219,29 @@ class GUI(Frame):
             self.delay = int(self.e1.get())
             self.delay_ms = self.delay / 1000
             self.measure_nb = int(self.e2.get())
-            self.ymin = float(self.e3.get())
-            self.ymax = float(self.e4.get())
+            self.ymin1 = float(self.e3.get())
+            self.ymax1 = float(self.e4.get())
+
+            if self.e5.get() != '':
+                self.ymin2 = float(self.e5.get())
+            if self.e6.get() != '':
+                self.ymax2 = float(self.e6.get())
+            if self.e7.get() != '':
+                self.ymin3 = float(self.e7.get())
+            if self.e8.get() != '':
+                self.ymax3 = float(self.e8.get())
 
             # Check for invalid values
             if self.delay <= 0 or self.measure_nb <= 0:
                 mb.showwarning("Error", 'Delay and number of measurements cannot be less or equal zero')
                 return
-            if self.ymin >= self.ymax:
+            if self.ymin1 >= self.ymax1:
+                mb.showwarning("Error", 'ymin1 cannot be greater or equal ymax1')
+                return
+            if self.ymin2 >= self.ymax2 and int(self.two_chan.get()) == 1:
+                mb.showwarning("Error", 'ymin2 cannot be greater or equal ymax2')
+                return
+            if (self.ymin3 >= self.ymax3 or self.ymin2 >= self.ymax2) and int(self.three_chan.get()) == 1:
                 mb.showwarning("Error", 'ymin cannot be greater or equal ymax')
                 return
 
@@ -217,7 +262,7 @@ class GUI(Frame):
 
             # Check for invalid limits of y axis
             for i in range(0, int(self.measure_nb)):
-                if float(self.chan1.voltage) < self.ymin:
+                if float(self.chan1.voltage) < self.ymin1:
                     mb.showwarning("Error", 'ymin cannot be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
                     return
 
@@ -254,8 +299,8 @@ class GUI(Frame):
                 with open(self.csv_file2, mode='a') as csv_write2:
                     for i in range(0, int(self.measure_nb)):
                         csv_writer2 = csv.writer(csv_write2, delimiter=',')
-                        csv_writer2.writerow([(i + 1), round((self.chan2.value * 0.22), 0), round((self.chan2.voltage, * 0.22), 5)])
-                        y2.append(self.chan2.voltage)
+                        csv_writer2.writerow([(i + 1), int(self.chan2.value * 0.22), round((self.chan2.voltage * 0.22), 5)])
+                        y2.append(self.chan2.voltage * 0.22)
                         time.sleep(self.delay_ms)
 
             # Same if user uses 3 channels, write data to 2 another files
@@ -263,8 +308,8 @@ class GUI(Frame):
                 with open(self.csv_file2, mode='a') as csv_write2:
                     for i in range(0, int(self.measure_nb)):
                         csv_writer2 = csv.writer(csv_write2, delimiter=',')
-                        csv_writer2.writerow([(i + 1), round((self.chan2.value * 0.22), 0), round((self.chan2.voltage, * 0.22), 5)])
-                        y2.append(self.chan2.voltage)
+                        csv_writer2.writerow([(i + 1), int(self.chan2.value * 0.22), round((self.chan2.voltage * 0.22), 5)])
+                        y2.append(self.chan2.voltage * 0.22)
                         time.sleep(self.delay_ms)
                 with open(self.csv_file3, mode='a') as csv_write3:
                     for i in range(0, int(self.measure_nb)):
@@ -286,33 +331,33 @@ class GUI(Frame):
             if int(self.two_chan.get()) == 0 and int(self.three_chan.get()) == 0:
                 plt.plot(x, y1)
                 plt.grid(True)
-                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.ylim(float(self.ymin1), float(self.ymax1))
 
             elif int(self.two_chan.get()) == 1:
                 ax1 = plt.subplot(211)
                 plt.plot(x, y1)
-                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.ylim(float(self.ymin1), float(self.ymax1))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 ax2 = plt.subplot(212, sharex=ax1)
                 plt.plot(x, y2)
-                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.ylim(float(self.ymin2), float(self.ymax2))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             elif int(self.three_chan.get()) == 1:
                 ax1 = plt.subplot(311)
                 plt.plot(x, y1)
-                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.ylim(float(self.ymin1), float(self.ymax1))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 ax2 = plt.subplot(312, sharex=ax1)
                 plt.plot(x, y2)
-                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.ylim(float(self.ymin2), float(self.ymax3))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
                 ax3 = plt.subplot(313, sharex=ax1)
                 plt.plot(x, y3)
-                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.ylim(float(self.ymin3), float(self.ymax3))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             # If check button is False, then remove values from fields
@@ -366,9 +411,6 @@ class GUI(Frame):
             # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
             mb.showerror("ADS1115 Connection", "Failed to connect ADS1115 with Raspberry Pi:\n" + str(e))
-
-            # Destroy Tkinter object
-            # self.master.destroy()
             return
 
     # Main function, that makes GUI
@@ -380,19 +422,23 @@ class GUI(Frame):
             # Create name of entry fields
             tk.Label(self.master, padx=30, text="Delay (in ms):").grid(row=0)
             tk.Label(self.master, padx=30, text="Number of measurements:").grid(row=1)
-            tk.Label(self.master, padx=30, text="Minimum of y axis:").grid(row=2)
-            tk.Label(self.master, padx=30, text="Maximum of y axis:").grid(row=3)
+            tk.Label(self.master, padx=30, text="Minimum of y axis channel 1:").grid(row=2)
+            tk.Label(self.master, padx=30, text="Maximum of y axis channel 1:").grid(row=3)
+            tk.Label(self.master, padx=30, text="Minimum of y axis channel 2:").grid(row=4)
+            tk.Label(self.master, padx=30, text="Maximum of y axis channel 2:").grid(row=5)
+            tk.Label(self.master, padx=30, text="Minimum of y axis channel 3:").grid(row=6)
+            tk.Label(self.master, padx=30, text="Maximum of y axis channel 3:").grid(row=7)
 
             # Create a box, which will behave like console window
             self.text_box = tk.Text(self.master, width=50, height=15)
-            self.text_box.grid(row=7, column=0, columnspan=15, sticky='W', padx=65)
+            self.text_box.grid(row=10, column=0, columnspan=15, sticky='W', padx=65)
             self.text_box.insert("end-1c", "Enter values\n")    
 
             # Add scrollbar to the Text widget
             self.scroll = tk.Scrollbar(self.master)
             self.scroll.config(command=self.text_box.yview)
             self.text_box.config(yscrollcommand=self.scroll.set)
-            self.scroll.grid(row=7, column=1, columnspan=15, sticky='NS')
+            self.scroll.grid(row=10, column=1, columnspan=15, sticky='NS')
 
             # Create check buttons
             tk.Checkbutton(self.master, text="Remember values", variable=self.remember_val).grid(row=0, column=2, sticky=tk.NS, padx=35)
@@ -400,35 +446,52 @@ class GUI(Frame):
             tk.Checkbutton(self.master, text="Use 2 channels", variable=self.two_chan).grid(row=2, column=2, sticky=tk.NS, padx=30)
             tk.Checkbutton(self.master, text="Use 3 channels", variable=self.three_chan).grid(row=3, column=2, sticky=tk.NS, padx=30)
 
+
             # Create entry fields
             self.e1 = tk.Entry(self.master)
             self.e2 = tk.Entry(self.master)
             self.e3 = tk.Entry(self.master)
             self.e4 = tk.Entry(self.master)
+            self.e5 = tk.Entry(self.master)
+            self.e6 = tk.Entry(self.master)
+            self.e7 = tk.Entry(self.master)
+            self.e8 = tk.Entry(self.master)
 
             # Assigning to fields basic values
             self.e1.insert(10, "100")
             self.e2.insert(10, "20")
             self.e3.insert(10, "1")
-            self.e4.insert(10, "5") 
+            self.e4.insert(10, "5")
+            self.e5.insert(10, "0")
+            self.e6.insert(10, "0")
+            self.e7.insert(10, "0")
+            self.e8.insert(10, "0")
 
             # Make a grid of entry fields
             self.e1.grid(row=0, column=1)
             self.e2.grid(row=1, column=1)
             self.e3.grid(row=2, column=1)
             self.e4.grid(row=3, column=1)
+            self.e5.grid(row=4, column=1)
+            self.e6.grid(row=5, column=1)
+            self.e7.grid(row=6, column=1)
+            self.e8.grid(row=7, column=1)
 
             # Binding Enter button as if user could press Apply button
             self.e1.bind("<Return>", self.process_data)
             self.e2.bind("<Return>", self.process_data)
             self.e3.bind("<Return>", self.process_data)
             self.e4.bind("<Return>", self.process_data)
+            self.e5.bind("<Return>", self.process_data)
+            self.e6.bind("<Return>", self.process_data)
+            self.e7.bind("<Return>", self.process_data)
+            self.e8.bind("<Return>", self.process_data)
 
             # Create two buttons which will call funcs if user press them
-            tk.Button(self.master, text='Quit', command=self.callback).grid(row=5, column=0, sticky=tk.W, pady=10, padx=60)
-            tk.Button(self.master, text='Apply!', command=self.process_data).grid(row=5, column=1, sticky=tk.W, pady=2, padx=60)
-            tk.Button(self.master, text='Open file', command=self.open_file).grid(row=5, column=2, sticky=tk.W, pady=2, padx=60)
-            tk.Button(self.master, text='Send file!', command=self.send_file).grid(row=7, column=2, columnspan=10, sticky=tk.W, pady=0, padx=60)
+            tk.Button(self.master, text='Quit', command=self.callback).grid(row=8, column=0, sticky=tk.W, pady=10, padx=60)
+            tk.Button(self.master, text='Apply!', command=self.process_data).grid(row=8, column=1, sticky=tk.W, pady=2, padx=60)
+            tk.Button(self.master, text='Open file', command=self.open_file).grid(row=8, column=2, sticky=tk.W, pady=2, padx=60)
+            tk.Button(self.master, text='Send file!', command=self.send_file).grid(row=10, column=2, columnspan=10, sticky=tk.W, pady=0, padx=60)
         except Exception as e:
             # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
