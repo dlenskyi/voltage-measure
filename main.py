@@ -242,7 +242,7 @@ class GUI(Frame):
                 mb.showwarning("Error", 'ymin2 cannot be greater or equal ymax2')
                 return
             if (self.ymin3 >= self.ymax3 or self.ymin2 >= self.ymax2) and int(self.three_chan.get()) == 1:
-                mb.showwarning("Error", 'ymin cannot be greater or equal ymax')
+                mb.showwarning("Error", 'ymin2/ymin3 cannot be greater or equal ymax2/ymax3')
                 return
 
             # Removing initial text from text box
@@ -255,16 +255,27 @@ class GUI(Frame):
             y2 = []
             y3 = []
 
-            # Assigning title and labels to axis
-            plt.title("V = f(n)")
-            plt.xlabel('Number of measurements, n')
-            plt.ylabel('Voltage, V')
-
             # Check for invalid limits of y axis
             for i in range(0, int(self.measure_nb)):
                 if float(self.chan1.voltage) < self.ymin1:
-                    mb.showwarning("Error", 'ymin cannot be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
+                    mb.showwarning("Error", 'ymin1 cannot be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
                     return
+
+            if int(self.two_chan.get()) == 1:
+                for i in range(0, int(self.measure_nb)):
+                    if float(self.chan2.voltage) < self.ymin2:
+                        mb.showwarning("Error", 'ymin2 cannot be greater than measured voltage: {}'.format(round(self.chan2.voltage, 3)))
+                        return
+
+            elif int(self.three_chan.get()) == 1:
+                for i in range(0, int(self.measure_nb)):
+                    if float(self.chan2.voltage) < self.ymin2:
+                        mb.showwarning("Error", 'ymin2 cannot be greater than measured voltage: {}'.format(round(self.chan2.voltage, 3)))
+                        return
+                for i in range(0, int(self.measure_nb)):
+                    if float(self.chan3.voltage) < self.ymin3:
+                        mb.showwarning("Error", 'ymin3 cannot be greater than measured voltage: {}'.format(round(self.chan3.voltage, 3)))
+                        return
 
             # Printing title of table with voltage values
             with open(self.csv_file1, mode='w') as csv_file1:
@@ -329,34 +340,52 @@ class GUI(Frame):
 
             # Building a plot
             if int(self.two_chan.get()) == 0 and int(self.three_chan.get()) == 0:
+                # Assigning title and labels to axis
+                plt.title("V = f(n)")
+                plt.xlabel('Number of measurements, n')
+                plt.ylabel('Voltage, V')
+
+                # Build plot with grid and set y axis limits
                 plt.plot(x, y1)
                 plt.grid(True)
                 plt.ylim(float(self.ymin1), float(self.ymax1))
 
             elif int(self.two_chan.get()) == 1:
+                plt.title("V = f(n)")
                 ax1 = plt.subplot(211)
                 plt.plot(x, y1)
+                plt.xlabel('Number of measurements, n')
+                plt.ylabel('Voltage, V')
                 plt.ylim(float(self.ymin1), float(self.ymax1))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 ax2 = plt.subplot(212, sharex=ax1)
                 plt.plot(x, y2)
+                plt.xlabel('Number of measurements, n')
+                plt.ylabel('Current, I')
                 plt.ylim(float(self.ymin2), float(self.ymax2))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             elif int(self.three_chan.get()) == 1:
+                plt.title("V = f(n)")
                 ax1 = plt.subplot(311)
                 plt.plot(x, y1)
+                plt.xlabel('Number of measurements, n')
+                plt.ylabel('Voltage, V')
                 plt.ylim(float(self.ymin1), float(self.ymax1))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 ax2 = plt.subplot(312, sharex=ax1)
                 plt.plot(x, y2)
+                plt.xlabel('Number of measurements, n')
+                plt.ylabel('Current, I')
                 plt.ylim(float(self.ymin2), float(self.ymax3))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
                 ax3 = plt.subplot(313, sharex=ax1)
                 plt.plot(x, y3)
+                plt.xlabel('Number of measurements, n')
+                plt.ylabel('Voltage, V')
                 plt.ylim(float(self.ymin3), float(self.ymax3))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
