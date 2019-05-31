@@ -254,7 +254,7 @@ class GUI(Frame):
                 with open(self.csv_file2, mode='a') as csv_write2:
                     for i in range(0, int(self.measure_nb)):
                         csv_writer2 = csv.writer(csv_write2, delimiter=',')
-                        csv_writer2.writerow([(i + 1), (self.chan2.value / 0.22), (round(self.chan2.voltage, 5) / 0.22)])
+                        csv_writer2.writerow([(i + 1), round((self.chan2.value * 0.22), 0), round((self.chan2.voltage, * 0.22), 5)])
                         y2.append(self.chan2.voltage)
                         time.sleep(self.delay_ms)
 
@@ -263,7 +263,7 @@ class GUI(Frame):
                 with open(self.csv_file2, mode='a') as csv_write2:
                     for i in range(0, int(self.measure_nb)):
                         csv_writer2 = csv.writer(csv_write2, delimiter=',')
-                        csv_writer2.writerow([(i + 1), (self.chan2.value / 0.22), (round(self.chan2.voltage, 5) / 0.22)])
+                        csv_writer2.writerow([(i + 1), round((self.chan2.value * 0.22), 0), round((self.chan2.voltage, * 0.22), 5)])
                         y2.append(self.chan2.voltage)
                         time.sleep(self.delay_ms)
                 with open(self.csv_file3, mode='a') as csv_write3:
