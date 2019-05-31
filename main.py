@@ -114,7 +114,7 @@ class GUI(Frame):
             # If selected file nor csv neither pdf or png
             elif '.' in filename:
                 mb.showwarning("Open File", "Type of file is not satisfied by a program\n")
-        
+
         # Case if error occured while opening file
         except Exception as e:
             print(traceback.format_exc())
