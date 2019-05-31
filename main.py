@@ -49,6 +49,7 @@ class GUI(Frame):
 
     # Function for saving figure as pdf/png image
     def save(self, name='', fmt='png'):
+
         try:
             pwd = os.getcwd()
             iPath = './pictures/{}'.format(fmt)
@@ -58,14 +59,16 @@ class GUI(Frame):
             plt.savefig('{}.{}'.format(name, fmt), fmt='png')
             os.chdir(pwd)
             self.text_box.insert(tk.END, "Figure saved\n")
+
+        # Case if error occure while saving a figure
         except Exception as e:
-            # Case if error occure while saving a figure
             print(traceback.format_exc())
             mb.showerror("Save Figure", "Failed to save figure:\n" + str(e))
             return
 
     # Function that helps with opening figures and csv data
     def open_file(self):
+
         try:
             # Call the window which helps to find a file to open
             filename = fd.askopenfilename(filetypes = (("CSV Files", ".csv"), ("PNG Files", ".png"), ("PDF Files", '.pdf'), ("All files", "*.*")))
@@ -111,14 +114,16 @@ class GUI(Frame):
             # If selected file nor csv neither pdf or png
             elif '.' in filename:
                 mb.showwarning("Open File", "Type of file is not satisfied by a program\n")
+        
+        # Case if error occured while opening file
         except Exception as e:
-            # Case if error occured while opening file
             print(traceback.format_exc())
             mb.showerror("Open File", "Failed to open a file:\n" + str(e))
             return
 
     # Function that sends selected file to shared directory
     def send_file(self):
+
         try:
             # Call the window which helps to find a file to open
             filename = fd.askopenfilename(filetypes = (("CSV Files", ".csv"), ("PNG Files", ".png"), ("PDF Files", '.pdf'), ("All files", "*.*")))
@@ -156,8 +161,8 @@ class GUI(Frame):
             # Printing about successfull operation
             self.text_box.insert(tk.END, "File has been moved to {}!\n".format(destination_folder))
 
+        # Case if error occured while opening file
         except Exception as e:
-            # Case if error occured while opening file
             print(traceback.format_exc())
             mb.showerror("Open File", "Failed to open a file:\n" + str(e))
             return
@@ -171,6 +176,7 @@ class GUI(Frame):
 
     # Function that manages data processing
     def process_data(self, event=None):
+
         try:
             # Check for correct checks of buttons
             if int(self.two_chan.get()) == 1 and int(self.three_chan.get()) == 1:
@@ -222,6 +228,7 @@ class GUI(Frame):
             self.ymin1 = float(self.e3.get())
             self.ymax1 = float(self.e4.get())
 
+            # Check if values from input fields are not empty
             if self.e5.get() != '':
                 self.ymin2 = float(self.e5.get())
             if self.e6.get() != '':
@@ -260,21 +267,33 @@ class GUI(Frame):
                 if float(self.chan1.voltage) < self.ymin1:
                     mb.showwarning("Error", 'ymin1 cannot be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
                     return
+                if float(self.chan1.voltage) > self.ymax1:
+                    mb.showwarning("Error", 'ymax1 must be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
+                        return
 
             if int(self.two_chan.get()) == 1:
                 for i in range(0, int(self.measure_nb)):
-                    if float(round((self.chan2.voltage * 0.22), 5)) < self.ymin2:
-                        mb.showwarning("Error", 'ymin2 cannot be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 5)))
+                    if float(round((self.chan2.voltage * 0.22), 3)) < self.ymin2:
+                        mb.showwarning("Error", 'ymin2 cannot be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 3)))
+                        return
+                    if float(round((self.chan2.voltage * 0.22), 3)) > self.ymax2:
+                        mb.showwarning("Error", 'ymax2 must be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 3)))
                         return
 
             elif int(self.three_chan.get()) == 1:
                 for i in range(0, int(self.measure_nb)):
-                    if float(round((self.chan2.voltage * 0.22), 5)) < self.ymin2:
-                        mb.showwarning("Error", 'ymin2 cannot be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 5)))
+                    if float(round((self.chan2.voltage * 0.22), 3)) < self.ymin2:
+                        mb.showwarning("Error", 'ymin2 cannot be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 3)))
+                        return
+                    if float(round((self.chan2.voltage * 0.22), 3)) > self.ymax2:
+                        mb.showwarning("Error", 'ymax2 must be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 3)))
                         return
                 for i in range(0, int(self.measure_nb)):
                     if float(self.chan3.voltage) < self.ymin3:
                         mb.showwarning("Error", 'ymin3 cannot be greater than measured voltage: {}'.format(round(self.chan3.voltage, 3)))
+                        return
+                    if float(self.chan3.voltage) > self.ymax3:
+                        mb.showwarning("Error", 'ymax3 must be greater than measured voltage: {}'.format(round(self.chan3.voltage, 3)))
                         return
 
             # Printing title of table with voltage values
@@ -295,7 +314,7 @@ class GUI(Frame):
                     csv_write2.writerow(['#', ' raw', '    I'])
                 with open(self.csv_file3, mode='w') as csv_file3:
                     csv_write3 = csv.writer(csv_file3, delimiter=',')
-                    csv_write3.writerow(['#', ' raw', '    v'])
+                    csv_write3.writerow(['#', ' raw', '    V'])
 
             # Printing resulting values to file
             with open(self.csv_file1, mode='a') as csv_write1:
@@ -352,7 +371,10 @@ class GUI(Frame):
                 plt.ylim(float(self.ymin1), float(self.ymax1))
 
             elif int(self.two_chan.get()) == 1:
-                fig = plt.figure()
+                # Build subplot for each channel data on figure object
+                fig = plt.figure(figsize=(10,5))
+
+                # Set the title of subplots and legends, set grid, limits and build plots
                 ax1 = fig.add_subplot(211)
                 ax1.title.set_text("V = f(n)")
                 plt.plot(x, y1)
@@ -369,8 +391,12 @@ class GUI(Frame):
                 plt.grid(True)
                 plt.ylim(float(self.ymin2), float(self.ymax2))
 
+                # Correct layout of subplots
+                plt.tight_layout()
+
+            # Same case with 3 channel input
             elif int(self.three_chan.get()) == 1:
-                fig = plt.figure()
+                fig = plt.figure(figsize=(12,7))
                 ax1 = fig.add_subplot(311)
                 ax1.title.set_text("V = f(n)")
                 plt.plot(x, y1)
@@ -394,21 +420,34 @@ class GUI(Frame):
                 plt.xlabel('Number of measurements, n')
                 plt.ylabel('Voltage, V')
                 plt.ylim(float(self.ymin3), float(self.ymax3))
+                fig.tight_layout()
 
-            # If check button is False, then remove values from fields
+            # If check button 'Remember values' is False, then remove values from fields
             if int(self.remember_val.get()) == 0:
                 self.e1.delete(0, tk.END)
                 self.e2.delete(0, tk.END)
                 self.e3.delete(0, tk.END)
                 self.e4.delete(0, tk.END)
 
+            if int(self.remember_val.get()) == 0 and int(self.two_chan.get()) == 1:
+                self.e5.delete(0, tk.END)
+                self.e6.delete(0, tk.END)
+
+            elif int(self.remember_val.get()) == 0 and int(self.three_chan.get()) == 1:
+                self.e5.delete(0, tk.END)
+                self.e6.delete(0, tk.END)
+                self.e7.delete(0, tk.END)
+                self.e8.delete(0, tk.END)
+
             # Showing plot on a screeen
             plt.show(block=False)
 
+            # If check button 'Save figure' is True, then save the figure
             if int(self.save_fig.get()) == 1:
                 self.save(self.name_for_save_fig)
+
+        # Case if error occured while proccesing data
         except Exception as e:
-            # Case if error occured while proccesing data
             print(traceback.format_exc())
             mb.showerror("Process Data", "Failed to process data:\n" + str(e))
             return
@@ -423,6 +462,7 @@ class GUI(Frame):
 
     # Create save connection to ADC via I2C bus
     def init_ads1x15(self):
+
         try:
             # Create the I2C bus
             self.i2c = busio.I2C(board.SCL, board.SDA)
@@ -442,14 +482,15 @@ class GUI(Frame):
                 self.chan2 = AnalogIn(self.ads, ADS.P1)
                 self.chan3 = AnalogIn(self.ads, ADS.P2)
 
+        # Case if error occured while connecting ADS1115 to Raspberry Pi
         except Exception as e:
-            # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
             mb.showerror("ADS1115 Connection", "Failed to connect ADS1115 with Raspberry Pi:\n" + str(e))
             return
 
     # Main function, that makes GUI
     def init_window(self):
+
         try:
             # Assigning title to our window
             self.master.title("Measuring voltage")
@@ -527,8 +568,9 @@ class GUI(Frame):
             tk.Button(self.master, text='Apply!', command=self.process_data).grid(row=8, column=1, sticky=tk.W, pady=2, padx=60)
             tk.Button(self.master, text='Open file', command=self.open_file).grid(row=8, column=2, sticky=tk.W, pady=2, padx=60)
             tk.Button(self.master, text='Send file!', command=self.send_file).grid(row=10, column=2, columnspan=10, sticky=tk.W, pady=0, padx=60)
+
+        # Case if error occured while creating a GUI window
         except Exception as e:
-            # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
             mb.showerror("Window creation", "Failed to create a GUI window:\n" + str(e))
 
