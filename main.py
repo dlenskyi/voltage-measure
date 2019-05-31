@@ -337,6 +337,7 @@ class GUI(Frame):
 
             elif int(self.three_chan.get()) == 1:
                 self.text_box.insert(tk.END, "Data was successfully written to file {}\n".format(self.csv_file2))
+                self.text_box.insert(tk.END, "Data was successfully written to file {}\n".format(self.csv_file3))
 
             # Building a plot
             if int(self.two_chan.get()) == 0 and int(self.three_chan.get()) == 0:
@@ -356,16 +357,18 @@ class GUI(Frame):
                 plt.plot(x, y1)
                 plt.xlabel('Number of measurements, n')
                 plt.ylabel('Voltage, V')
+                plt.grid(True)
                 plt.ylim(float(self.ymin1), float(self.ymax1))
-                plt.setp(ax1.get_xticklabels(), fontsize=6)
+                # plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 plt.title("V = f(n)")
                 ax2 = plt.subplot(212, sharex=ax1)
                 plt.plot(x, y2)
                 plt.xlabel('Number of measurements, n')
                 plt.ylabel('Current, I')
+                plt.grid(True)
                 plt.ylim(float(self.ymin2), float(self.ymax2))
-                plt.setp(ax2.get_xticklabels(), fontsize=6)
+                # plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             elif int(self.three_chan.get()) == 1:
                 plt.title("V = f(n)")
@@ -373,24 +376,27 @@ class GUI(Frame):
                 plt.plot(x, y1)
                 plt.xlabel('Number of measurements, n')
                 plt.ylabel('Voltage, V')
+                plt.grid(True)
                 plt.ylim(float(self.ymin1), float(self.ymax1))
-                plt.setp(ax1.get_xticklabels(), fontsize=6)
+                # plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 plt.title("I = f(n)")
                 ax2 = plt.subplot(312, sharex=ax1)
                 plt.plot(x, y2)
                 plt.xlabel('Number of measurements, n')
                 plt.ylabel('Current, I')
+                plt.grid(True)
                 plt.ylim(float(self.ymin2), float(self.ymax3))
-                plt.setp(ax2.get_xticklabels(), fontsize=6)
+                # plt.setp(ax2.get_xticklabels(), fontsize=6)
 
                 plt.title("V = f(n)")
                 ax3 = plt.subplot(313, sharex=ax1)
                 plt.plot(x, y3)
                 plt.xlabel('Number of measurements, n')
                 plt.ylabel('Voltage, V')
+                plt.grid(True)
                 plt.ylim(float(self.ymin3), float(self.ymax3))
-                plt.setp(ax2.get_xticklabels(), fontsize=6)
+                # plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             # If check button is False, then remove values from fields
             if int(self.remember_val.get()) == 0:
