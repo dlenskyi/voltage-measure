@@ -224,19 +224,19 @@ class GUI(Frame):
             # Printing title of table with voltage values
             with open(self.csv_file1, mode='w') as csv_file1:
                 csv_write1 = csv.writer(csv_file1, delimiter=',')
-                csv_write1.writerow(['#', ' raw', '    v'])
+                csv_write1.writerow(['#', ' raw', '    V'])
 
             # Case if user uses 2 channels, creates another file
             if int(self.two_chan.get()) == 1:
                 with open(self.csv_file2, mode='w') as csv_file2:
                     csv_write2 = csv.writer(csv_file2, delimiter=',')
-                    csv_write2.writerow(['#', ' raw', '    v'])
+                    csv_write2.writerow(['#', ' raw', '    I'])
 
             # Same if user uses 3 channels, creates two another files with data
             elif int(self.three_chan.get()) == 1:
                 with open(self.csv_file2, mode='w') as csv_file2:
                     csv_write2 = csv.writer(csv_file2, delimiter=',')
-                    csv_write2.writerow(['#', ' raw', '    v'])
+                    csv_write2.writerow(['#', ' raw', '    I'])
                 with open(self.csv_file3, mode='w') as csv_file3:
                     csv_write3 = csv.writer(csv_file3, delimiter=',')
                     csv_write3.writerow(['#', ' raw', '    v'])
@@ -254,7 +254,7 @@ class GUI(Frame):
                 with open(self.csv_file2, mode='a') as csv_write2:
                     for i in range(0, int(self.measure_nb)):
                         csv_writer2 = csv.writer(csv_write2, delimiter=',')
-                        csv_writer2.writerow([(i + 1), self.chan2.value, round(self.chan2.voltage, 5)])
+                        csv_writer2.writerow([(i + 1), (self.chan2.value / 0.22), (round(self.chan2.voltage, 5) / 0.22)])
                         y2.append(self.chan2.voltage)
                         time.sleep(self.delay_ms)
 
@@ -263,7 +263,7 @@ class GUI(Frame):
                 with open(self.csv_file2, mode='a') as csv_write2:
                     for i in range(0, int(self.measure_nb)):
                         csv_writer2 = csv.writer(csv_write2, delimiter=',')
-                        csv_writer2.writerow([(i + 1), self.chan2.value, round(self.chan2.voltage, 5)])
+                        csv_writer2.writerow([(i + 1), (self.chan2.value / 0.22), (round(self.chan2.voltage, 5) / 0.22)])
                         y2.append(self.chan2.voltage)
                         time.sleep(self.delay_ms)
                 with open(self.csv_file3, mode='a') as csv_write3:
@@ -282,35 +282,38 @@ class GUI(Frame):
             elif int(self.three_chan.get()) == 1:
                 self.text_box.insert(tk.END, "Data was successfully written to file {}\n".format(self.csv_file2))
 
+            # Building a plot
             if int(self.two_chan.get()) == 0 and int(self.three_chan.get()) == 0:
                 plt.plot(x, y1)
                 plt.grid(True)
                 plt.ylim(float(self.ymin), float(self.ymax))
 
             elif int(self.two_chan.get()) == 1:
-                ax1 = plt.subplot(311)
+                ax1 = plt.subplot(211)
                 plt.plot(x, y1)
+                plt.ylim(float(self.ymin), float(self.ymax))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
-                ax2 = plt.subplot(312, sharex=ax1)
+                ax2 = plt.subplot(212, sharex=ax1)
                 plt.plot(x, y2)
                 plt.ylim(float(self.ymin), float(self.ymax))
+                plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             elif int(self.three_chan.get()) == 1:
                 ax1 = plt.subplot(311)
                 plt.plot(x, y1)
+                plt.ylim(float(self.ymin), float(self.ymax))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
                 ax2 = plt.subplot(312, sharex=ax1)
                 plt.plot(x, y2)
-                plt.setp(ax2.get_xticklabels(), visible=False)
+                plt.ylim(float(self.ymin), float(self.ymax))
+                plt.setp(ax2.get_xticklabels(), fontsize=6)
 
                 ax3 = plt.subplot(313, sharex=ax1)
                 plt.plot(x, y3)
                 plt.ylim(float(self.ymin), float(self.ymax))
-
-            # Setting limits of y axis
-            # plt.ylim(float(self.ymin), float(self.ymax))
+                plt.setp(ax2.get_xticklabels(), fontsize=6)
 
             # If check button is False, then remove values from fields
             if int(self.remember_val.get()) == 0:
