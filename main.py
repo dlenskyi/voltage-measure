@@ -33,10 +33,14 @@ class GUI(Frame):
     # The very beginning of class
     def __init__(self, master=None):
         self.master = master
-        self.remember_val = tk.IntVar()
         self.name_for_save_fig = '1'
+        self.remember_val = tk.IntVar()
         self.save_fig = tk.IntVar()
-        self.init_ads1x15()
+        self.two_chan = tk.IntVar()
+        self.three_chan = tk.IntVar()
+        self.csv_file1 = 'chan1.csv'
+        self.csv_file2 = 'chan2.csv'
+        self.csv_file3 = 'chan3.csv'
         self.init_window()
 
     # Function for saving figure as pdf/png image
@@ -99,6 +103,10 @@ class GUI(Frame):
                 self.img_lbl = tk.Button(self.master, image=render,command=self.imgpress)
                 self.img_lbl.image = render
                 self.img_lbl.place(x=0, y=0)
+
+            # If selected file nor csv neither pdf or png
+            else:
+                mb.showwarning("Open File", "Type of file is not satisfied by a program\n")
         except Exception as e:
             # Case if error occured while opening file
             print(traceback.format_exc())
@@ -117,7 +125,7 @@ class GUI(Frame):
             if '.csv' in filename:
 
                 # If file exists remove it
-                path_to_csv = destination_folder + 'data.csv'
+                path_to_csv = destination_folder + self.csv_file1
                 if os.path.exists(path_to_csv):
                     os.remove(path_to_csv)
 
@@ -160,6 +168,14 @@ class GUI(Frame):
     # Function that manages data processing
     def process_data(self, event=None):
         try:
+            # Check for correct checks of buttons
+            if int(self.two_chan.get()) == 1 and int(self.three_chan.get()) == 1:
+                mb.showwarning("Error", 'So do you want to use 2 or 3 channels of ADS1115? :D')
+                return
+
+            # Create connection to ADS1115 via I2C
+            self.init_ads1x15()
+
             # Check for invalid values
             tmp1 = self.e1.get()
             tmp2 = self.e2.get()
@@ -167,7 +183,7 @@ class GUI(Frame):
             tmp4 = self.e4.get()
             if tmp1.lstrip('-').isdigit() == False or tmp2.lstrip('-').isdigit() == False or tmp3.replace(".", "", 1).lstrip('-').isdigit() == False or tmp4.replace(".", "", 1).lstrip('-').isdigit() == False:
                 mb.showwarning("Error", 'Fields must be digits and not empty')
-                return  
+                return
 
             # Assigning values from user input
             self.delay = int(self.e1.get())
@@ -182,7 +198,7 @@ class GUI(Frame):
                 return
             if self.ymin >= self.ymax:
                 mb.showwarning("Error", 'ymin cannot be greater or equal ymax')
-                return  
+                return
 
             # Removing initial text from text box
             self.text_box.delete(1.0, "end-1c")
@@ -190,7 +206,9 @@ class GUI(Frame):
 
             # Assigning values to x and y
             x = np.arange(self.measure_nb)
-            y = []  
+            y1 = []
+            y2 = []
+            y3 = []
 
             # Assigning title and labels to axis
             plt.title("V = f(n)")
@@ -198,32 +216,101 @@ class GUI(Frame):
             plt.ylabel('Voltage, V')
 
             # Check for invalid limits of y axis
-            if float(self.chan.voltage) < self.ymin:
-                mb.showwarning("Error", 'ymin cannot be greater than measured voltage: {}'.format(round(self.chan.voltage, 3)))
-                return  
+            for i in range(0, int(self.measure_nb)):
+                if float(self.chan1.voltage) < self.ymin:
+                    mb.showwarning("Error", 'ymin cannot be greater than measured voltage: {}'.format(round(self.chan1.voltage, 3)))
+                    return
 
             # Printing title of table with voltage values
-            with open('data.csv', mode='w') as csv_file:
-                csv_write = csv.writer(csv_file, delimiter=',')
-                csv_write.writerow(['#', ' raw', '    v'])
+            with open(self.csv_file1, mode='w') as csv_file1:
+                csv_write1 = csv.writer(csv_file1, delimiter=',')
+                csv_write1.writerow(['#', ' raw', '    v'])
+
+            # Case if user uses 2 channels, creates another file
+            if int(self.two_chan.get()) == 1:
+                with open(self.csv_file2, mode='w') as csv_file2:
+                    csv_write2 = csv.writer(csv_file2, delimiter=',')
+                    csv_write2.writerow(['#', ' raw', '    v'])
+
+            # Same if user uses 3 channels, creates two another files with data
+            elif int(self.three_chan.get()) == 1:
+                with open(self.csv_file2, mode='w') as csv_file2:
+                    csv_write2 = csv.writer(csv_file2, delimiter=',')
+                    csv_write2.writerow(['#', ' raw', '    v'])
+                with open(self.csv_file3, mode='w') as csv_file3:
+                    csv_write3 = csv.writer(csv_file3, delimiter=',')
+                    csv_write3.writerow(['#', ' raw', '    v'])
 
             # Printing resulting values to file
-            with open('data.csv', mode='a') as csv_write:
+            with open(self.csv_file1, mode='a') as csv_write1:
                 for i in range(0, int(self.measure_nb)):
-                    csv_writer = csv.writer(csv_write, delimiter=',')
-                    csv_writer.writerow([(i + 1), self.chan.value, round(self.chan.voltage, 5)])
-                    y.append(self.chan.voltage)
+                    csv_writer1 = csv.writer(csv_write1, delimiter=',')
+                    csv_writer1.writerow([(i + 1), self.chan1.value, round(self.chan1.voltage, 5)])
+                    y1.append(self.chan1.voltage)
                     time.sleep(self.delay_ms)
 
-            # Printing about successfull write to file
-            self.text_box.insert(tk.END, "Data was successfully written to file data.csv\n")
+            # Case if user wants to use 2 channels, also writing resulting values to another file
+            if int(self.two_chan.get()) == 1:
+                with open(self.csv_file2, mode='a') as csv_write2:
+                    for i in range(0, int(self.measure_nb)):
+                        csv_writer2 = csv.writer(csv_write2, delimiter=',')
+                        csv_writer2.writerow([(i + 1), self.chan2.value, round(self.chan2.voltage, 5)])
+                        y2.append(self.chan2.voltage)
+                        time.sleep(self.delay_ms)
 
-            # Building plot
-            plt.plot(x, y)
-            plt.grid(True)
+            # Same if user uses 3 channels, write data to 2 another files
+            elif int(self.three_chan.get()) == 1:
+                with open(self.csv_file2, mode='a') as csv_write2:
+                    for i in range(0, int(self.measure_nb)):
+                        csv_writer2 = csv.writer(csv_write2, delimiter=',')
+                        csv_writer2.writerow([(i + 1), self.chan2.value, round(self.chan2.voltage, 5)])
+                        y2.append(self.chan2.voltage)
+                        time.sleep(self.delay_ms)
+                with open(self.csv_file3, mode='a') as csv_write3:
+                    for i in range(0, int(self.measure_nb)):
+                        csv_writer3 = csv.writer(csv_write3, delimiter=',')
+                        csv_writer3.writerow([(i + 1), self.chan3.value, round(self.chan3.voltage, 5)])
+                        y3.append(self.chan3.voltage)
+                        time.sleep(self.delay_ms)
+
+            # Printing about successfull write to file
+            self.text_box.insert(tk.END, "Data was successfully written to file {}\n".format(self.csv_file1))
+
+            if int(self.two_chan.get()) == 1:
+                self.text_box.insert(tk.END, "Data was successfully written to file {}\n".format(self.csv_file2))
+
+            elif int(self.three_chan.get()) == 1:
+                self.text_box.insert(tk.END, "Data was successfully written to file {}\n".format(self.csv_file2))
+
+            if int(self.two_chan.get()) == 0 and int(self.three_chan.get()) == 0:
+                plt.plot(x, y1)
+                plt.grid(True)
+                plt.ylim(float(self.ymin), float(self.ymax))
+
+            elif int(self.two_chan.get()) == 1:
+                ax1 = plt.subplot(311)
+                plt.plot(x, y1)
+                plt.setp(ax1.get_xticklabels(), fontsize=6)
+
+                ax2 = plt.subplot(312, sharex=ax1)
+                plt.plot(x, y2)
+                plt.ylim(float(self.ymin), float(self.ymax))
+
+            elif int(self.three_chan.get()) == 1:
+                ax1 = plt.subplot(311)
+                plt.plot(x, y1)
+                plt.setp(ax1.get_xticklabels(), fontsize=6)
+
+                ax2 = plt.subplot(312, sharex=ax1)
+                plt.plot(x, y2)
+                plt.setp(ax2.get_xticklabels(), visible=False)
+
+                ax3 = plt.subplot(313, sharex=ax1)
+                plt.plot(x, y3)
+                plt.ylim(float(self.ymin), float(self.ymax))
 
             # Setting limits of y axis
-            plt.ylim(float(self.ymin), float(self.ymax))
+            # plt.ylim(float(self.ymin), float(self.ymax))
 
             # If check button is False, then remove values from fields
             if int(self.remember_val.get()) == 0:
@@ -247,8 +334,6 @@ class GUI(Frame):
     def callback(self):
         # Prompts a window if user wants to quit
         if mb.askyesno('Verify', 'Really quit?'):
-            # Destroy Tkinter object
-            self.master.destroy()
             exit()
         else:
             mb.showinfo('No', 'Quit has been cancelled')
@@ -263,15 +348,25 @@ class GUI(Frame):
             self.ads = ADS.ADS1115(self.i2c)    
 
             # Create single-ended input on channel 0
-            self.chan = AnalogIn(self.ads, ADS.P0)
+            self.chan1 = AnalogIn(self.ads, ADS.P0)
+
+            # Case if user wants to use 2 channels, also create singe-ended input on channel 1
+            if int(self.two_chan.get()) == 1:
+                self.chan2 = AnalogIn(self.ads, ADS.P1)
+
+            # Same if user wants 3 channels, also create input on channel 1 and 2
+            elif int(self.three_chan.get()) == 1:
+                self.chan2 = AnalogIn(self.ads, ADS.P1)
+                self.chan3 = AnalogIn(self.ads, ADS.P2)
+
         except Exception as e:
             # Case if error occured while connecting ADS1115 to Raspberry
             print(traceback.format_exc())
             mb.showerror("ADS1115 Connection", "Failed to connect ADS1115 with Raspberry Pi:\n" + str(e))
 
             # Destroy Tkinter object
-            self.master.destroy()
-            exit()
+            # self.master.destroy()
+            return
 
     # Main function, that makes GUI
     def init_window(self):
@@ -296,9 +391,11 @@ class GUI(Frame):
             self.text_box.config(yscrollcommand=self.scroll.set)
             self.scroll.grid(row=7, column=1, columnspan=15, sticky='NS')
 
-            # Create check button
-            tk.Checkbutton(self.master, text="Remember values", variable=self.remember_val).grid(row=1, column=2, sticky=tk.NS, padx=35)
-            tk.Checkbutton(self.master, text="Save figure after", variable=self.save_fig).grid(row=2, column=2, sticky=tk.NS, padx=35)
+            # Create check buttons
+            tk.Checkbutton(self.master, text="Remember values", variable=self.remember_val).grid(row=0, column=2, sticky=tk.NS, padx=35)
+            tk.Checkbutton(self.master, text="Save figure after", variable=self.save_fig).grid(row=1, column=2, sticky=tk.NS, padx=35)
+            tk.Checkbutton(self.master, text="Use 2 channels", variable=self.two_chan).grid(row=2, column=2, sticky=tk.NS, padx=30)
+            tk.Checkbutton(self.master, text="Use 3 channels", variable=self.three_chan).grid(row=3, column=2, sticky=tk.NS, padx=30)
 
             # Create entry fields
             self.e1 = tk.Entry(self.master)
