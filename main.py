@@ -263,14 +263,14 @@ class GUI(Frame):
 
             if int(self.two_chan.get()) == 1:
                 for i in range(0, int(self.measure_nb)):
-                    if float(self.chan2.voltage) < self.ymin2:
-                        mb.showwarning("Error", 'ymin2 cannot be greater than measured voltage: {}'.format(round(self.chan2.voltage, 3)))
+                    if float(round((self.chan2.voltage * 0.22), 5)) < self.ymin2:
+                        mb.showwarning("Error", 'ymin2 cannot be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 5)))
                         return
 
             elif int(self.three_chan.get()) == 1:
                 for i in range(0, int(self.measure_nb)):
-                    if float(self.chan2.voltage) < self.ymin2:
-                        mb.showwarning("Error", 'ymin2 cannot be greater than measured voltage: {}'.format(round(self.chan2.voltage, 3)))
+                    if float(round((self.chan2.voltage * 0.22), 5)) < self.ymin2:
+                        mb.showwarning("Error", 'ymin2 cannot be greater than measured current: {}'.format(round((self.chan2.voltage * 0.22), 5)))
                         return
                 for i in range(0, int(self.measure_nb)):
                     if float(self.chan3.voltage) < self.ymin3:
@@ -359,6 +359,7 @@ class GUI(Frame):
                 plt.ylim(float(self.ymin1), float(self.ymax1))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
+                plt.title("V = f(n)")
                 ax2 = plt.subplot(212, sharex=ax1)
                 plt.plot(x, y2)
                 plt.xlabel('Number of measurements, n')
@@ -375,6 +376,7 @@ class GUI(Frame):
                 plt.ylim(float(self.ymin1), float(self.ymax1))
                 plt.setp(ax1.get_xticklabels(), fontsize=6)
 
+                plt.title("I = f(n)")
                 ax2 = plt.subplot(312, sharex=ax1)
                 plt.plot(x, y2)
                 plt.xlabel('Number of measurements, n')
@@ -382,6 +384,7 @@ class GUI(Frame):
                 plt.ylim(float(self.ymin2), float(self.ymax3))
                 plt.setp(ax2.get_xticklabels(), fontsize=6)
 
+                plt.title("V = f(n)")
                 ax3 = plt.subplot(313, sharex=ax1)
                 plt.plot(x, y3)
                 plt.xlabel('Number of measurements, n')
