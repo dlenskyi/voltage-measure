@@ -228,14 +228,14 @@ class GUI(Frame):
             self.ymin1 = float(self.e3.get())
             self.ymax1 = float(self.e4.get())
 
-            # Check if values from input fields are not empty
-            if self.e5.get() != '':
+            # Check if values from input fields are not empty and have only digits
+            if self.e5.get() != '' and self.e5.get().replace(".", "", 1).lstrip('-').isdigit() == True:
                 self.ymin2 = float(self.e5.get())
-            if self.e6.get() != '':
+            if self.e6.get() != '' and self.e6.get().replace(".", "", 1).lstrip('-').isdigit() == True:
                 self.ymax2 = float(self.e6.get())
-            if self.e7.get() != '':
+            if self.e7.get() != '' and self.e7.get().replace(".", "", 1).lstrip('-').isdigit() == True:
                 self.ymin3 = float(self.e7.get())
-            if self.e8.get() != '':
+            if self.e8.get() != '' and self.e8.get().replace(".", "", 1).lstrip('-').isdigit() == True:
                 self.ymax3 = float(self.e8.get())
 
             # Check for invalid values
