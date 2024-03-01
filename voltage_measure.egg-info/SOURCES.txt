@@ -1,0 +1,11 @@
+README.md
+setup.py
+adafruit_ads1x15/__init__.py
+adafruit_ads1x15/ads1015.py
+adafruit_ads1x15/ads1115.py
+adafruit_ads1x15/ads1x15.py
+adafruit_ads1x15/analog_in.py
+voltage_measure.egg-info/PKG-INFO
+voltage_measure.egg-info/SOURCES.txt
+voltage_measure.egg-info/dependency_links.txt
+voltage_measure.egg-info/top_level.txt

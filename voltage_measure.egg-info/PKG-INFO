@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: voltage-measure
+Version: 0.1.0
+Summary: Program developed for Raspberry Pi, for the purpose of measuring voltage, converted by ADS1115, and further processing data
+Author: Denys Lenskyi
+Author-email: denis.lenskyi@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
